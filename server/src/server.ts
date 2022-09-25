@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma, PrismaClient } from "@prisma/client";
 
 const app = express();
 
@@ -25,16 +25,52 @@ app.post("/ads", (req, res) => {
   return res.status(201).json([]);
 });
 
-app.get("/games/:id/ads", (req, res) => {
+app.get("/games/:id/ads", async (req, res) => {
   const gameId = req.params.id;
 
-  return res.send(gameId);
+  const ads = await prismaClient.ad.findMany({
+    select: {
+      id: true,
+      name: true,
+      weekDays: true,
+      useVoiceChannel: true,
+      yearsPlaying: true,
+      hourEnd: true,
+      hourStart: true,
+    },
+    where: {
+      gameId: gameId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return res.json(
+    ads.map((ad) => {
+      return {
+        ...ad,
+        weekDays: ad.weekDays.split(","),
+      };
+    })
+  );
 });
 
-app.get("/games/:id/discord", (req, res) => {
-  const gameId = req.params.id;
+app.get("/ads/:id/discord", async (req, res) => {
+  const adId = req.params.id;
 
-  return res.json([]);
+  const ad = await prismaClient.ad.findUniqueOrThrow({
+    select: {
+      discord: true,
+    },
+    where: {
+      id: adId,
+    },
+  });
+
+  return res.json({
+    discord: ad,
+  });
 });
 
 app.listen(3333, () => {
