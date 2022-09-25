@@ -1,9 +1,24 @@
 import express, { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 
-app.get("/games", (req, res) => {
-  return res.json([]);
+// conexão com banco ativa
+const prismaClient = new PrismaClient({
+  log: ["query"],
+});
+
+app.get("/games", async (req, res) => {
+  const games = await prismaClient.game.findMany({
+    include: {
+      _count: {
+        select: {
+          ads: true,
+        },
+      },
+    },
+  });
+  return res.json(games);
 });
 
 app.post("/ads", (req, res) => {
