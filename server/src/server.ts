@@ -1,7 +1,13 @@
 import express, { Request, Response } from "express";
-import { prisma, PrismaClient } from "@prisma/client";
+import cors from "cors";
+import { PrismaClient } from "@prisma/client";
+import { convertHourStringToMinutes } from "./utils/convert-hours-string-to-minutes";
+import { convertMinutesToHoursString } from "./utils/convert-minutes-to-hours-string";
 
 const app = express();
+
+app.use(express.json());
+app.use(cors());
 
 // conexão com banco ativa
 const prismaClient = new PrismaClient({
@@ -21,8 +27,24 @@ app.get("/games", async (req, res) => {
   return res.json(games);
 });
 
-app.post("/ads", (req, res) => {
-  return res.status(201).json([]);
+app.post("/games/:gameId/ads", async (req, res) => {
+  const gameId = req.params.gameId;
+  const body: any = req.body;
+
+  const ad = await prismaClient.ad.create({
+    data: {
+      gameId,
+      name: body.name,
+      weekDays: body.weekDays.join(","),
+      useVoiceChannel: body.useVoiceChannel,
+      yearsPlaying: body.yearsPlaying,
+      hourEnd: convertHourStringToMinutes(body.hourEnd),
+      hourStart: convertHourStringToMinutes(body.hourStart),
+      discord: body.discord,
+    },
+  });
+
+  return res.status(201).json(ad);
 });
 
 app.get("/games/:id/ads", async (req, res) => {
@@ -51,6 +73,8 @@ app.get("/games/:id/ads", async (req, res) => {
       return {
         ...ad,
         weekDays: ad.weekDays.split(","),
+        hourEnd: convertMinutesToHoursString(ad.hourEnd),
+        hourStart: convertMinutesToHoursString(ad.hourStart),
       };
     })
   );
