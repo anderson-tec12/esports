@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Entypo } from "@expo/vector-icons";
-import { TouchableOpacity, View, Image } from "react-native";
+import { TouchableOpacity, View, Image, FlatList, Text } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -10,6 +10,7 @@ import LogoImg from "../../assets/logo.png";
 import { styles } from "./styles";
 import { THEME } from "../../theme";
 import { Heading } from "../../components/Heading";
+import { DuoCart, DuoCartProps } from "../../components/DuoCart";
 
 interface RouteParams {
   id: string;
@@ -22,9 +23,17 @@ export function Game() {
   const navigation = useNavigation();
   const game = route.params as RouteParams;
 
+  const [duos, setDuos] = useState<DuoCartProps[]>([]);
+
   function handleGoBack() {
     navigation.goBack();
   }
+
+  useEffect(() => {
+    fetch(`http://192.168.15.5:3333/games/${game.id}/ads`)
+      .then((res) => res.json())
+      .then((res) => setDuos(res));
+  }, []);
 
   return (
     <Background>
@@ -49,6 +58,29 @@ export function Game() {
         />
 
         <Heading title={game.title} subtitle="Conecte-se e comece a jogar!" />
+
+        <FlatList
+          data={duos}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return <DuoCart data={item} onConnect={() => {}} />;
+          }}
+          contentContainerStyle={[
+            duos.length === 0
+              ? {
+                  justifyContent: "center",
+                  flex: 1,
+                  alignItems: "center",
+                }
+              : styles.contentList,
+          ]}
+          style={[styles.containerList]}
+          ListEmptyComponent={() => {
+            return <Text style={styles.emptyListText}>Não há anuncios</Text>;
+          }}
+        />
       </SafeAreaView>
     </Background>
   );
