@@ -7,6 +7,7 @@ import Logo from "./assets/logo.svg";
 import { GameBanner } from "./components/GameBanner";
 import { CreateAtBanner } from "./components/CreatAtBanner";
 import { CreatAtModal } from "./components/CreatAtModal";
+import { ListGames } from "./services/gamesCrud";
 
 type GameProps = {
   bannerUrl: string;
@@ -18,9 +19,7 @@ type GameProps = {
 function App() {
   const [listGames, setListGames] = useState<GameProps[]>([]);
   useEffect(() => {
-    fetch("http://127.0.0.1:3333/games")
-      .then((res) => res.json())
-      .then((data) => setListGames(data));
+    ListGames().then((data) => setListGames(data.data));
   }, []);
   return (
     <div className="max-w-[1344px] mx-auto flex flex-col items-center my-20">
