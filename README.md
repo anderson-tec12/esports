@@ -15,6 +15,8 @@
 <img src="https://user-images.githubusercontent.com/12089780/194090834-60b1e29e-c9e3-4b0b-ac41-9147230416ee.png" width="200"/>
 </div>
 
+### Gerando apk 
+eas build -p android --profile preview
 
 # Back-end
 
